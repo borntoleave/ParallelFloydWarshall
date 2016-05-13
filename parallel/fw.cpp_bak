@@ -1,0 +1,83 @@
+#include <iostream>
+#include <mpi.h>
+
+#include "io_idat.h"
+#include "alg.cpp"
+#include "etime.cpp"
+#define whole_ij whole[j*m+i]
+#define whole_ik whole[k*m+i]
+#define whole_kj whole[j*m+k]
+
+using namespace std;
+int main(int argc, char * argv[])
+{
+int m,n,*whole,*part;
+char outfile[20]="short.idat";
+
+int my_blockX,my_blockY,my_dimX,my_dimY,my_count,my_dispX,my_dispY,*counts;
+int source,dest,tag=50,myid,np, rt_np;
+MPI_Status status;
+
+read_idat(argv[1],&m,&n,whole);//read data. Since all procs need a whole graph table, it's faster to initialize for all than broadcast by the master.
+
+
+MPI_Init(&argc, &argv);  
+MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+MPI_Comm_size(MPI_COMM_WORLD, &np);
+
+
+
+//---------------------------perfect square ?-------------------------
+rt_np=floor(sqrt(np));
+if(rt_np*rt_np!=np){
+	if(myid==0)//master
+		cerr<<"-------------------------------------------------------------"<<endl
+			<<"Number of procs: "<<np<<" is not a perfect square!"<<endl;
+	MPI_Finalize();
+	exit(-1);}
+	//--------------------------------------------------------------------
+counts=new int [np];disp=new int [np];
+
+my_blockX=myid/rt_np;my_blockY=myid%rt_np;
+my_dimX=m/rt_np+(my_blockX<(m%rt_np)?1:0);
+my_dimY=m/rt_np+(my_blockY<(m%rt_np)?1:0);
+my_count=my_dimX*my_dimY;
+counts[myid]=my_count;
+for(int i=0;i<np;i++){
+	if(myid==i){
+		if(i>0)disp[i]=disp[i-1]+counts[i-1];
+		cerr<<"worker id "<<myid<<":\t"<<my_dimX<<"(col)\t"<<my_dimY<<"(row) =>\t"
+			<<my_count<<" jobs\t"<<disp[i]<<"(shift)"<<endl;
+		}
+	MPI_Barrier(MPI_COMM_WORLD);
+	}
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^distribute blocks^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+if(myid==0){
+	
+	}
+
+for(int k=0;k<m;k++)
+{
+	//for(int i=myid;i<)
+}
+	
+	
+	//cerr <<"Graph:"<<endl;	show_graph(m,n,whole,0);
+	//tic();	//start timing
+	
+//^^^^^^^^^^^^^^^^^^^^^^^^^^read in graph^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+	
+	
+	
+	
+if(myid==0){//master
+//	prl_FW(m,n,whole,np,myid);
+	toc();	//end timing
+	cerr <<"Shortest path:"<<endl;	show_graph(m,n,whole,0);
+	write_idat(m,n,whole,outfile);
+	cerr<<"Time used:";
+	cout<<'\t'<<etime()<<endl;
+	}
+MPI_Finalize();
+}

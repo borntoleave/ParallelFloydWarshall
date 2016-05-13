@@ -1,0 +1,10 @@
+The code workable for large graphs is the 'fw.cpp_masterBcast'. 
+Currently with nprocs=4, it takes 300s. However it has a speed down curve with increasing nprocs. The cause should be the long communication time.
+
+The code 'fw.cpp_all2all' is workable for small graphs up to 300x300 or so. Then it will fail. I guess the cause is the system can't hold so many messages at one time. But when it works, it's much faster than the master broadcast model.
+
+When I say "broadcast", I'm actually using for loop send and receive. I failed to use the MPI_Bcast function. It might be a better solution for my code.
+
+You need to have a Data folder with all the binary data. And
+	$cp version fw.cpp
+to use the Makefile. Then just type "make" it will compile and run the program. Then it will compare the results with the right answer.
